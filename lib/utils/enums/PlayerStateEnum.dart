@@ -1,0 +1,3 @@
+enum PlayerState{
+  PLAYING,PAUSED,STOPPED,MUTED
+}
