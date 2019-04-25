@@ -1,3 +1,3 @@
-# empress_music
+# Empress Music
 
-Empress Music - A Music Player built using Flutter.
+A Music Player built using Flutter.
