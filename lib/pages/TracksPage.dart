@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'dart:io';
 import 'package:scoped_model/scoped_model.dart';
 
 import '../models/SongModel.dart';
 import '../scoped_models/MainModel.dart';
-import '../utils/widgets/SongCard.dart';
+import '../widgets/SongCard.dart';
 
 class TracksPage extends StatefulWidget {
   @override
@@ -21,7 +20,6 @@ class _TracksPageState extends State<TracksPage> {
             SongCard(
               context: context,
               index: index,
-              isNowPlaying: false,
               model: model,
             ),
             SizedBox(

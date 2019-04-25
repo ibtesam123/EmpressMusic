@@ -9,7 +9,7 @@ import './TracksPage.dart';
 import './ArtistsPage.dart';
 import '../scoped_models/MainModel.dart';
 import '../utils/enums/PlayerStateEnum.dart';
-import '../utils/widgets/SongCard.dart';
+import '../widgets/NowPlayingCard.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -290,10 +290,9 @@ class _HomePageState extends State<HomePage> {
       mainAxisAlignment: MainAxisAlignment.end,
       children: <Widget>[
         model.playerState == PlayerState.PLAYING
-            ? SongCard(
+            ? NowPlayingCard(
                 context: context,
                 index: model.currentIndex,
-                isNowPlaying: true,
                 model: model,
               )
             : Container(),

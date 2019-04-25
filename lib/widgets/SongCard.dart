@@ -1,19 +1,15 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 
-import '../../scoped_models/MainModel.dart';
+import '../scoped_models/MainModel.dart';
 
 class SongCard extends StatelessWidget {
-  final bool isNowPlaying;
   final BuildContext context;
   final int index;
   final MainModel model;
 
   SongCard(
-      {@required this.isNowPlaying,
-      @required this.context,
-      @required this.index,
-      @required this.model});
+      {@required this.context, @required this.index, @required this.model});
 
   Widget _buildSongAvatar(String albumArtUri) {
     return ClipRRect(
@@ -30,14 +26,21 @@ class SongCard extends StatelessWidget {
     );
   }
 
+  Widget _buildSongName() {
+    return Flexible(
+      child: Text(
+        model.songsList[index].title,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
+
   Widget _buildSongCard() {
     return Container(
       width: MediaQuery.of(context).size.width,
       child: FlatButton(
         onPressed: () async {
-          isNowPlaying
-              ? model.stopPlayback()
-              : model.playSong(model.songsList[index], index);
+          model.playSong(model.songsList[index], index);
         },
         padding: EdgeInsets.symmetric(vertical: 25.0),
         child: Row(
@@ -46,12 +49,7 @@ class SongCard extends StatelessWidget {
             SizedBox(width: 10.0),
             _buildSongAvatar(model.songsList[index].albumArt),
             SizedBox(width: 10.0),
-            Flexible(
-              child: Text(
-                model.songsList[index].title,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
+            _buildSongName(),
           ],
         ),
       ),
@@ -60,14 +58,6 @@ class SongCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return isNowPlaying
-        ? Padding(
-            padding: EdgeInsets.only(top: 1),
-            child: Container(
-              color: Colors.blue,
-              child: _buildSongCard(),
-            ),
-          )
-        : _buildSongCard();
+    return _buildSongCard();
   }
 }
