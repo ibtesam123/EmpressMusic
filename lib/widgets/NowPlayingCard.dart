@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 
 import '../scoped_models/MainModel.dart';
+import '../utils/enums/PlayerStateEnum.dart';
 
 class NowPlayingCard extends StatelessWidget {
   final BuildContext context;
@@ -52,8 +53,15 @@ class NowPlayingCard extends StatelessWidget {
               icon: Icon(Icons.skip_previous, color: Colors.grey),
             ),
             IconButton(
-              onPressed: () => model.stopPlayback(),
-              icon: Icon(Icons.stop, color: Colors.grey),
+              onPressed: () => model.playerState == PlayerState.PLAYING
+                  ? model.pausePlayback()
+                  : model.resumePlayback(),
+              icon: Icon(
+                  model.playerState == PlayerState.PLAYING
+                      ? Icons.pause
+                      : Icons.play_arrow,
+                  color: Colors.grey,
+                  size: 30.0),
             ),
             IconButton(
               onPressed: () {},
@@ -61,6 +69,14 @@ class NowPlayingCard extends StatelessWidget {
             )
           ],
         ));
+  }
+
+  Widget _buildProgressBar() {
+    return Container(
+      width: MediaQuery.of(context).size.width * model.percentageCompletion(),
+      height: 2.0,
+      color: Colors.blue,
+    );
   }
 
   @override
@@ -72,20 +88,26 @@ class NowPlayingCard extends StatelessWidget {
         color: Colors.black.withOpacity(0.1),
         padding: EdgeInsets.only(top: 0.5),
         child: GestureDetector(
-          onTap: () {
-            // model.stopPlayback();
+          onDoubleTap: () {
+            model.stopPlayback();
           },
           child: Container(
             color: Color.fromRGBO(244, 244, 244, 1),
             padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                _buildSongAvatar(),
-                SizedBox(width: 10),
-                _buildSongName(),
-                _buildControlButtons()
+                _buildProgressBar(),
+                Row(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    _buildSongAvatar(),
+                    SizedBox(width: 10),
+                    _buildSongName(),
+                    _buildControlButtons()
+                  ],
+                ),
               ],
             ),
           ),

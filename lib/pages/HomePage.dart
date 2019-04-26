@@ -289,7 +289,9 @@ class _HomePageState extends State<HomePage> {
       mainAxisSize: MainAxisSize.max,
       mainAxisAlignment: MainAxisAlignment.end,
       children: <Widget>[
-        model.playerState == PlayerState.PLAYING
+        model.playerState == PlayerState.PLAYING ||
+                model.playerState == PlayerState.PAUSED ||
+                model.playerState == PlayerState.MUTED
             ? NowPlayingCard(
                 context: context,
                 index: model.currentIndex,

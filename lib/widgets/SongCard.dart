@@ -28,9 +28,51 @@ class SongCard extends StatelessWidget {
 
   Widget _buildSongName() {
     return Flexible(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: <Widget>[
+          Container(
+            width: double.infinity,
+            child: Text(
+              model.songsList[index].title,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.left,
+            ),
+          ),
+          SizedBox(height: 3),
+          Container(
+            width: double.infinity,
+            child: Text(
+              model.songsList[index].artist,
+              style: TextStyle(fontSize: 12),
+              textAlign: TextAlign.left,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getDurationText() {
+    int _totalDuration = int.parse(
+        Duration(milliseconds: model.songsList[index].duration)
+            .inMilliseconds
+            .toString());
+    int _minutes = (_totalDuration ~/ 1000) ~/ 60;
+    int _seconds = (_totalDuration ~/ 1000) % 60;
+    return _seconds < 10
+        ? _minutes.toString() + ':0' + _seconds.toString()
+        : _minutes.toString() + ':' + _seconds.toString();
+  }
+
+  Widget _buildDuration() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.0),
       child: Text(
-        model.songsList[index].title,
-        overflow: TextOverflow.ellipsis,
+        _getDurationText(),
+        style: TextStyle(fontWeight: FontWeight.normal),
       ),
     );
   }
@@ -40,7 +82,7 @@ class SongCard extends StatelessWidget {
       width: MediaQuery.of(context).size.width,
       child: FlatButton(
         onPressed: () async {
-          model.playSong(model.songsList[index], index);
+          model.startPlayback(model.songsList[index], index);
         },
         padding: EdgeInsets.symmetric(vertical: 25.0),
         child: Row(
@@ -50,6 +92,7 @@ class SongCard extends StatelessWidget {
             _buildSongAvatar(model.songsList[index].albumArt),
             SizedBox(width: 10.0),
             _buildSongName(),
+            _buildDuration(),
           ],
         ),
       ),
