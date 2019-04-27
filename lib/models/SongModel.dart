@@ -5,6 +5,7 @@ class SongModel {
   String artist;
   String title;
   String album;
+  int albumID;
   int duration;
   String uri;
   String albumArt;
@@ -16,5 +17,6 @@ class SongModel {
       @required this.albumArt,
       @required this.duration,
       @required this.title,
-      @required this.uri});
+      @required this.uri,
+      @required this.albumID});
 }

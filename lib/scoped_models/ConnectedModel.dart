@@ -6,6 +6,8 @@ import '../utils/enums/PlayerStateEnum.dart';
 
 mixin ConnectedModel on Model {
   List<SongModel> _songsList;
+  Map<int, List<SongModel>> _albumList;
+  Map<String, dynamic> _artistList;
   MusicFinder _audioPlayer = MusicFinder();
   PlayerState _playerState = PlayerState.STOPPED;
   bool _isAvailable = false;
@@ -14,22 +16,36 @@ mixin ConnectedModel on Model {
   Duration _duration = Duration(milliseconds: 0);
 }
 
-mixin SongsModel on ConnectedModel {
+mixin PlayerModel on ConnectedModel {
+  void _addToAlbum(SongModel s) {
+    if (_albumList.containsKey(s.albumID)) {
+      List<SongModel> _songs = _albumList[s.albumID];
+      _songs.add(s);
+      _albumList.update(s.albumID, (_) => _songs);
+    } else {
+      List<SongModel> _songs = List<SongModel>();
+      _songs.add(s);
+      _albumList.putIfAbsent(s.albumID, () => _songs);
+    }
+  }
+
   Future<void> initMusicPlayer() async {
     var _songData = await MusicFinder.allSongs();
     _songsList = List<SongModel>();
-
+    _albumList = Map();
+    _artistList = Map();
     for (Song s in _songData) {
       SongModel _model = SongModel(
-        album: s.album,
-        albumArt: s.albumArt,
-        artist: s.artist,
-        duration: s.duration,
-        id: s.id,
-        title: s.title,
-        uri: s.uri,
-      );
+          album: s.album,
+          albumArt: s.albumArt,
+          artist: s.artist,
+          duration: s.duration,
+          id: s.id,
+          title: s.title,
+          uri: s.uri,
+          albumID: s.albumId);
       _songsList.add(_model);
+      _addToAlbum(_model);
     }
     _songsList.sort((SongModel model1, SongModel model2) =>
         model1.title.compareTo(model2.title));
@@ -60,16 +76,6 @@ mixin SongsModel on ConnectedModel {
     notifyListeners();
   }
 
-  List<SongModel> get songsList {
-    return _songsList;
-  }
-
-  int get currentIndex {
-    return _currentIndex;
-  }
-}
-
-mixin PlayerModel on ConnectedModel {
   Future<void> startPlayback(int index) async {
     _currentIndex = index;
     await _audioPlayer.stop();
@@ -128,9 +134,23 @@ mixin PlayerModel on ConnectedModel {
     }
     return _currentIndex;
   }
+
+  double percentageCompletion() {
+    double _pCompletion =
+        _currentPosition.inMilliseconds / _duration.inMilliseconds;
+    return _pCompletion;
+  }
 }
 
 mixin UtilityModel on ConnectedModel {
+  List<SongModel> get songsList {
+    return _songsList;
+  }
+
+  int get currentIndex {
+    return _currentIndex;
+  }
+
   bool get isAvailable {
     return _isAvailable;
   }
@@ -147,9 +167,7 @@ mixin UtilityModel on ConnectedModel {
     return _currentPosition;
   }
 
-  double percentageCompletion() {
-    double _pCompletion =
-        _currentPosition.inMilliseconds / _duration.inMilliseconds;
-    return _pCompletion;
+  Map<int,List<SongModel>> get albumsList{
+    return _albumList;
   }
 }
