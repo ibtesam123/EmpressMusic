@@ -279,7 +279,7 @@ class _HomePageState extends State<HomePage> {
     if (model.isAvailable) {
       return _buildPageView();
     } else {
-      model.fetchLocalSongs();
+      model.initMusicPlayer();
       return Expanded(child: Center(child: Text('Fetching your songs...')));
     }
   }

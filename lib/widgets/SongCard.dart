@@ -82,7 +82,7 @@ class SongCard extends StatelessWidget {
       width: MediaQuery.of(context).size.width,
       child: FlatButton(
         onPressed: () async {
-          model.startPlayback(model.songsList[index], index);
+          model.startPlayback(index);
         },
         padding: EdgeInsets.symmetric(vertical: 25.0),
         child: Row(

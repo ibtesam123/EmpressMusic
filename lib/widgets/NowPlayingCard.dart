@@ -35,9 +35,12 @@ class NowPlayingCard extends StatelessWidget {
       fit: FlexFit.tight,
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 10.0),
-        child: Text(_songTitle.length >= 15
-            ? _songTitle.substring(0, 15) + '...'
-            : _songTitle),
+        child: Text(
+          _songTitle.length >= 15
+              ? _songTitle.substring(0, 15) + '...'
+              : _songTitle,
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
       ),
     );
   }
@@ -49,7 +52,9 @@ class NowPlayingCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             IconButton(
-              onPressed: () {},
+              onPressed: () {
+                model.startPlayback(model.previousSong());
+              },
               icon: Icon(Icons.skip_previous, color: Colors.grey),
             ),
             IconButton(
@@ -64,7 +69,9 @@ class NowPlayingCard extends StatelessWidget {
                   size: 30.0),
             ),
             IconButton(
-              onPressed: () {},
+              onPressed: () {
+                model.startPlayback(model.nextSong());
+              },
               icon: Icon(Icons.skip_next, color: Colors.grey),
             )
           ],

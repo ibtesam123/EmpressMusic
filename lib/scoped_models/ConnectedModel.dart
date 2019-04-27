@@ -15,7 +15,7 @@ mixin ConnectedModel on Model {
 }
 
 mixin SongsModel on ConnectedModel {
-  Future<void> fetchLocalSongs() async {
+  Future<void> initMusicPlayer() async {
     var _songData = await MusicFinder.allSongs();
     _songsList = List<SongModel>();
 
@@ -40,10 +40,12 @@ mixin SongsModel on ConnectedModel {
     });
 
     _audioPlayer.setCompletionHandler(() async {
+      _currentIndex++;
+      if (_currentIndex >= _songsList.length) _currentIndex = 0;
       await _audioPlayer.stop();
-      _currentPosition = _duration;
-      _playerState = PlayerState.STOPPED;
-      notifyListeners();
+      await _audioPlayer.play(_songsList[_currentIndex].uri);
+      _playerState = PlayerState.PLAYING;
+      _audioPlayer.positionHandler(Duration(milliseconds: 0));
     });
 
     _audioPlayer.setDurationHandler((Duration duration) {
@@ -68,13 +70,17 @@ mixin SongsModel on ConnectedModel {
 }
 
 mixin PlayerModel on ConnectedModel {
-  Future<void> startPlayback(SongModel song, int index) async {
-    await _audioPlayer.stop();
-    await _audioPlayer.play(song.uri);
-    _playerState = PlayerState.PLAYING;
+  Future<void> startPlayback(int index) async {
     _currentIndex = index;
-    _audioPlayer.durationHandler(Duration(milliseconds: song.duration));
-    notifyListeners();
+    await _audioPlayer.stop();
+    if (_playerState != PlayerState.PAUSED &&
+        _playerState != PlayerState.MUTED) {
+      await _audioPlayer.play(_songsList[index].uri);
+      _playerState = PlayerState.PLAYING;
+    }
+    _audioPlayer
+        .durationHandler(Duration(milliseconds: _songsList[index].duration));
+    _audioPlayer.positionHandler(Duration(milliseconds: 0));
   }
 
   Future<void> stopPlayback() async {
@@ -85,9 +91,12 @@ mixin PlayerModel on ConnectedModel {
   }
 
   Future<void> pausePlayback() async {
-    await _audioPlayer.pause();
-    _playerState = PlayerState.PAUSED;
-    notifyListeners();
+    if (_playerState == PlayerState.PLAYING ||
+        _playerState == PlayerState.MUTED) {
+      await _audioPlayer.pause();
+      _playerState = PlayerState.PAUSED;
+      notifyListeners();
+    }
   }
 
   Future<void> resumePlayback() async {
@@ -104,9 +113,20 @@ mixin PlayerModel on ConnectedModel {
     notifyListeners();
   }
 
-  double percentageCompletion() {
-    return (_currentPosition.inMilliseconds / _duration.inMilliseconds)
-        .toDouble();
+  int nextSong() {
+    _currentIndex++;
+    if (_currentIndex >= _songsList.length) {
+      _currentIndex = 0;
+    }
+    return _currentIndex;
+  }
+
+  int previousSong() {
+    _currentIndex--;
+    if (_currentIndex < 0) {
+      _currentIndex = _songsList.length - 1;
+    }
+    return _currentIndex;
   }
 }
 
@@ -125,5 +145,11 @@ mixin UtilityModel on ConnectedModel {
 
   Duration get currentPosition {
     return _currentPosition;
+  }
+
+  double percentageCompletion() {
+    double _pCompletion =
+        _currentPosition.inMilliseconds / _duration.inMilliseconds;
+    return _pCompletion;
   }
 }
