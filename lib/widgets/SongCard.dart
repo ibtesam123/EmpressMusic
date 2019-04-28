@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 
+import '../models/SongModel.dart';
 import '../scoped_models/MainModel.dart';
+import '../utils/enums/PlayerStateEnum.dart';
 
 class SongCard extends StatelessWidget {
   final BuildContext context;
   final int index;
+  final List<SongModel> songsList;
   final MainModel model;
+  final bool ifPlayAndPop;
 
   SongCard(
-      {@required this.context, @required this.index, @required this.model});
+      {@required this.context,
+      @required this.index,
+      @required this.songsList,
+      @required this.model,
+      @required this.ifPlayAndPop});
 
   Widget _buildSongAvatar(String albumArtUri) {
     return ClipRRect(
@@ -35,7 +43,7 @@ class SongCard extends StatelessWidget {
           Container(
             width: double.infinity,
             child: Text(
-              model.songsList[index].title,
+              songsList[index].title,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
               textAlign: TextAlign.left,
@@ -45,7 +53,7 @@ class SongCard extends StatelessWidget {
           Container(
             width: double.infinity,
             child: Text(
-              model.songsList[index].artist,
+              songsList[index].artist,
               style: TextStyle(fontSize: 12),
               textAlign: TextAlign.left,
             ),
@@ -57,7 +65,7 @@ class SongCard extends StatelessWidget {
 
   String _getDurationText() {
     int _totalDuration = int.parse(
-        Duration(milliseconds: model.songsList[index].duration)
+        Duration(milliseconds: songsList[index].duration)
             .inMilliseconds
             .toString());
     int _minutes = (_totalDuration ~/ 1000) ~/ 60;
@@ -82,14 +90,17 @@ class SongCard extends StatelessWidget {
       width: MediaQuery.of(context).size.width,
       child: FlatButton(
         onPressed: () async {
+          model.setSongsList(songsList, true);
+          model.setPlayerState(PlayerState.PLAYING);
           model.startPlayback(index);
+          if (ifPlayAndPop) Navigator.of(context).pop();
         },
         padding: EdgeInsets.symmetric(vertical: 25.0),
         child: Row(
           mainAxisSize: MainAxisSize.max,
           children: <Widget>[
             SizedBox(width: 10.0),
-            _buildSongAvatar(model.songsList[index].albumArt),
+            _buildSongAvatar(songsList[index].albumArt),
             SizedBox(width: 10.0),
             _buildSongName(),
             _buildDuration(),

@@ -11,7 +11,6 @@ class TracksPage extends StatefulWidget {
 }
 
 class _TracksPageState extends State<TracksPage> {
-  
   Widget _buildSongsList(List<SongModel> songList, MainModel model) {
     return ListView.builder(
       itemCount: songList.length,
@@ -22,6 +21,8 @@ class _TracksPageState extends State<TracksPage> {
               context: context,
               index: index,
               model: model,
+              songsList: songList,
+              ifPlayAndPop: false,
             ),
             SizedBox(
               width: MediaQuery.of(context).size.width,
@@ -38,7 +39,7 @@ class _TracksPageState extends State<TracksPage> {
   Widget build(BuildContext context) {
     return ScopedModelDescendant<MainModel>(
       builder: (BuildContext context, Widget child, MainModel model) {
-        return _buildSongsList(model.songsList, model);
+        return _buildSongsList(model.localSongs, model);
       },
     );
   }
