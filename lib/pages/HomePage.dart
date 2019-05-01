@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
+import 'dart:io';
 
 import '../utils/themes/HomeTheme.dart';
 import './FavouritesPage.dart';
@@ -121,13 +122,13 @@ class _HomePageState extends State<HomePage> {
               _pageController.jumpToPage(pageNo);
             },
             child: Container(
-              padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
+              padding: EdgeInsets.only(top: 8.0, right: 10.0, left: 10.0),
               child: Column(
                 children: <Widget>[
                   title,
                   SizedBox(height: 5),
                   Container(
-                    height: 3,
+                    height: 2,
                     width: _bottomLineWidth,
                     decoration: BoxDecoration(
                         color: Colors.blue,
@@ -142,13 +143,13 @@ class _HomePageState extends State<HomePage> {
               _pageController.jumpToPage(pageNo);
             },
             child: Container(
-              padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
+              padding: EdgeInsets.only(top: 8.0, right: 10.0, left: 10.0),
               child: Column(
                 children: <Widget>[
                   title,
                   SizedBox(height: 5),
                   Container(
-                    height: 3,
+                    height: 2,
                     width: _bottomLineWidth,
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.all(Radius.circular(8))),
@@ -306,18 +307,24 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return ScopedModelDescendant<MainModel>(
       builder: (BuildContext context, Widget child, MainModel model) {
-        return Scaffold(
-          appBar: _buildAppBar(),
-          body: Stack(
-            children: <Widget>[
-              Column(
-                children: <Widget>[
-                  _buildPageTitle(),
-                  _buildBody(model),
-                ],
-              ),
-              _buildNowPlaying(model, context)
-            ],
+        return WillPopScope(
+          onWillPop: () {
+            model.stopPlayback();
+            exit(0);
+          },
+          child: Scaffold(
+            appBar: _buildAppBar(),
+            body: Stack(
+              children: <Widget>[
+                Column(
+                  children: <Widget>[
+                    _buildPageTitle(),
+                    _buildBody(model),
+                  ],
+                ),
+                _buildNowPlaying(model, context)
+              ],
+            ),
           ),
         );
       },

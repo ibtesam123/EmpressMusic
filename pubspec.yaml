@@ -25,6 +25,8 @@ flutter:
 
   assets:
     - assets/images/AppLogo.png
+    - assets/images/Artist.png
+    - assets/images/MusicPlaceHolder.png
 
   # fonts:
   #   - family: Schyler

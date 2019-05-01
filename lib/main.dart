@@ -8,8 +8,7 @@ import './pages/HomePage.dart';
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
-
-  final MainModel _model =MainModel();
+  final MainModel _model = MainModel();
 
   @override
   Widget build(BuildContext context) {

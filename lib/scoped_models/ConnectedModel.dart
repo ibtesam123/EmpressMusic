@@ -1,5 +1,6 @@
 import 'package:scoped_model/scoped_model.dart';
 import 'package:flute_music_player/flute_music_player.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/SongModel.dart';
 import '../utils/enums/PlayerStateEnum.dart';
@@ -8,11 +9,12 @@ mixin ConnectedModel on Model {
   List<SongModel> _songsList;
   List<SongModel> _localSongs;
   Map<int, List<SongModel>> _albumList;
-  Map<String, dynamic> _artistList;
+  Map<String, List<SongModel>> _artistList;
   MusicFinder _audioPlayer = MusicFinder();
   PlayerState _playerState = PlayerState.STOPPED;
   bool _isAvailable = false;
   int _currentIndex = -1;
+  SharedPreferences _preferences;
   Duration _currentPosition = Duration(milliseconds: 0);
   Duration _duration = Duration(milliseconds: 0);
 }
@@ -34,6 +36,10 @@ mixin SongsModel on ConnectedModel {
     return _albumList;
   }
 
+  Map<String, List<SongModel>> get artistList {
+    return _artistList;
+  }
+
   List<SongModel> get localSongs {
     return _localSongs;
   }
@@ -45,6 +51,7 @@ mixin SongsModel on ConnectedModel {
 }
 
 mixin PlayerModel on ConnectedModel {
+  //
   void _addToAlbum(SongModel s) {
     if (_albumList.containsKey(s.albumID)) {
       List<SongModel> _songs = _albumList[s.albumID];
@@ -57,16 +64,29 @@ mixin PlayerModel on ConnectedModel {
     }
   }
 
-  void _initialize() {
+  void _addToArtist(SongModel s) {
+    if (_artistList.containsKey(s.artist)) {
+      List<SongModel> _songs = _artistList[s.artist];
+      _songs.add(s);
+      _artistList.update(s.artist, (_) => _songs);
+    } else {
+      List<SongModel> _songs = List<SongModel>();
+      _songs.add(s);
+      _artistList.putIfAbsent(s.artist, () => _songs);
+    }
+  }
+
+  Future<void> _initialize() async {
     _songsList = List<SongModel>();
     _localSongs = List<SongModel>();
     _albumList = Map();
     _artistList = Map();
+    _preferences = await SharedPreferences.getInstance();
   }
 
   Future<void> initMusicPlayer() async {
     var _songData = await MusicFinder.allSongs();
-    _initialize();
+    await _initialize();
     for (Song s in _songData) {
       SongModel _model = SongModel(
           album: s.album,
@@ -79,6 +99,7 @@ mixin PlayerModel on ConnectedModel {
           albumID: s.albumId);
       _localSongs.add(_model);
       _addToAlbum(_model);
+      _addToArtist(_model);
     }
     _localSongs.sort((SongModel model1, SongModel model2) =>
         model1.title.compareTo(model2.title));
@@ -126,6 +147,7 @@ mixin PlayerModel on ConnectedModel {
     await _audioPlayer.stop();
     _playerState = PlayerState.STOPPED;
     _currentIndex = -1;
+    _songsList.clear();
     notifyListeners();
   }
 
@@ -146,10 +168,15 @@ mixin PlayerModel on ConnectedModel {
   }
 
   Future<void> seekPlayback(Duration seekPosition) async {
-    _audioPlayer.positionHandler(seekPosition);
-    await _audioPlayer.play(_songsList[_currentIndex].uri);
+    _currentPosition = seekPosition;
+    await _audioPlayer.seek(seekPosition.inSeconds.toDouble());
     _playerState = PlayerState.PLAYING;
     notifyListeners();
+  }
+
+  Future<void> mutePlayback() async {
+    await _audioPlayer.mute(true);
+    _playerState = PlayerState.MUTED;
   }
 
   int nextSong() {
@@ -168,17 +195,10 @@ mixin PlayerModel on ConnectedModel {
     return _currentIndex;
   }
 
-  double percentageCompletion() {
-    double _pCompletion =
-        _currentPosition.inMilliseconds / _duration.inMilliseconds;
-    return _pCompletion;
-  }
-
-  void setPlayerState(PlayerState state){
-    _playerState=state;
+  void setPlayerState(PlayerState state) {
+    _playerState = state;
     notifyListeners();
   }
-
 }
 
 mixin UtilityModel on ConnectedModel {
@@ -192,5 +212,20 @@ mixin UtilityModel on ConnectedModel {
 
   Duration get currentPosition {
     return _currentPosition;
+  }
+
+  double percentageCompletion() {
+    double _pCompletion =
+        _currentPosition.inMilliseconds / _duration.inMilliseconds;
+    return _pCompletion;
+  }
+
+  String getDurationText(Duration d) {
+    int _totalDuration = d.inMilliseconds.toInt();
+    int _minutes = (_totalDuration ~/ 1000) ~/ 60;
+    int _seconds = (_totalDuration ~/ 1000) % 60;
+    return _seconds < 10
+        ? _minutes.toString() + ':0' + _seconds.toString()
+        : _minutes.toString() + ':' + _seconds.toString();
   }
 }

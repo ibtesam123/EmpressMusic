@@ -3,6 +3,7 @@ import 'dart:io';
 
 import '../scoped_models/MainModel.dart';
 import '../utils/enums/PlayerStateEnum.dart';
+import '../pages/SongPage.dart';
 
 class NowPlayingCard extends StatelessWidget {
   final BuildContext context;
@@ -31,15 +32,33 @@ class NowPlayingCard extends StatelessWidget {
 
   Widget _buildSongName() {
     String _songTitle = model.songsList[index].title;
+    String _songArtist = model.songsList[index].artist;
+    _songArtist = _songArtist.length > 15
+        ? _songArtist.substring(0, 15) + '...'
+        : _songArtist;
     return Flexible(
       fit: FlexFit.tight,
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 10.0),
-        child: Text(
-          _songTitle.length >= 15
-              ? _songTitle.substring(0, 15) + '...'
-              : _songTitle,
-          style: TextStyle(fontWeight: FontWeight.bold),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              _songTitle.length >= 15
+                  ? _songTitle.substring(0, 15) + '...'
+                  : _songTitle,
+              style: TextStyle(fontWeight: FontWeight.bold),
+              textAlign: TextAlign.left,
+            ),
+            SizedBox(height: 3.0),
+            Text(
+              _songArtist,
+              style: TextStyle(fontSize: 12.0),
+              textAlign: TextAlign.left,
+            ),
+          ],
         ),
       ),
     );
@@ -98,13 +117,16 @@ class NowPlayingCard extends StatelessWidget {
           onDoubleTap: () {
             model.stopPlayback();
           },
+          onTap: () {
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (BuildContext context) => SongPage()));
+          },
           child: Container(
             color: Color.fromRGBO(244, 244, 244, 1),
             padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                _buildProgressBar(),
                 Row(
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -115,6 +137,8 @@ class NowPlayingCard extends StatelessWidget {
                     _buildControlButtons()
                   ],
                 ),
+
+                // _buildProgressBar(),
               ],
             ),
           ),

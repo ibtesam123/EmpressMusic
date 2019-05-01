@@ -4,6 +4,7 @@ import 'dart:io';
 import '../models/SongModel.dart';
 import '../scoped_models/MainModel.dart';
 import '../utils/enums/PlayerStateEnum.dart';
+import '../pages/SongPage.dart';
 
 class SongCard extends StatelessWidget {
   final BuildContext context;
@@ -63,23 +64,12 @@ class SongCard extends StatelessWidget {
     );
   }
 
-  String _getDurationText() {
-    int _totalDuration = int.parse(
-        Duration(milliseconds: songsList[index].duration)
-            .inMilliseconds
-            .toString());
-    int _minutes = (_totalDuration ~/ 1000) ~/ 60;
-    int _seconds = (_totalDuration ~/ 1000) % 60;
-    return _seconds < 10
-        ? _minutes.toString() + ':0' + _seconds.toString()
-        : _minutes.toString() + ':' + _seconds.toString();
-  }
-
   Widget _buildDuration() {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.0),
       child: Text(
-        _getDurationText(),
+        model
+            .getDurationText(Duration(milliseconds: songsList[index].duration)),
         style: TextStyle(fontWeight: FontWeight.normal),
       ),
     );
@@ -90,10 +80,12 @@ class SongCard extends StatelessWidget {
       width: MediaQuery.of(context).size.width,
       child: FlatButton(
         onPressed: () async {
+          if (ifPlayAndPop) Navigator.of(context).pop();
           model.setSongsList(songsList, true);
           model.setPlayerState(PlayerState.PLAYING);
           model.startPlayback(index);
-          if (ifPlayAndPop) Navigator.of(context).pop();
+          Navigator.of(context).push(
+              MaterialPageRoute(builder: (BuildContext context) => SongPage()));
         },
         padding: EdgeInsets.symmetric(vertical: 25.0),
         child: Row(
