@@ -5,7 +5,6 @@ import 'dart:io';
 import '../utils/themes/HomeTheme.dart';
 import './FavouritesPage.dart';
 import './AlbumsPage.dart';
-import './PlaylistsPage.dart';
 import './TracksPage.dart';
 import './ArtistsPage.dart';
 import '../scoped_models/MainModel.dart';
@@ -104,15 +103,12 @@ class _HomePageState extends State<HomePage> {
         _bottomLineWidth = 20;
         break;
       case 1:
-        _bottomLineWidth = 55;
-        break;
-      case 2:
         _bottomLineWidth = 40;
         break;
-      case 3:
+      case 2:
         _bottomLineWidth = 45;
         break;
-      case 4:
+      case 3:
         _bottomLineWidth = 40;
         break;
     }
@@ -180,7 +176,7 @@ class _HomePageState extends State<HomePage> {
               0),
       _currentPage == 1
           ? _buildSinglePageWidget(
-              Text('Playlists',
+              Text('Tracks',
                   style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
@@ -188,13 +184,13 @@ class _HomePageState extends State<HomePage> {
               true,
               1)
           : _buildSinglePageWidget(
-              Text('Playlists',
+              Text('Tracks',
                   style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
               false,
               1),
       _currentPage == 2
           ? _buildSinglePageWidget(
-              Text('Tracks',
+              Text('Albums',
                   style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
@@ -202,13 +198,13 @@ class _HomePageState extends State<HomePage> {
               true,
               2)
           : _buildSinglePageWidget(
-              Text('Tracks',
+              Text('Albums',
                   style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
               false,
               2),
       _currentPage == 3
           ? _buildSinglePageWidget(
-              Text('Albums',
+              Text('Artists',
                   style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
@@ -216,24 +212,10 @@ class _HomePageState extends State<HomePage> {
               true,
               3)
           : _buildSinglePageWidget(
-              Text('Albums',
+              Text('Artists',
                   style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
               false,
               3),
-      _currentPage == 4
-          ? _buildSinglePageWidget(
-              Text('Artists',
-                  style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue)),
-              true,
-              4)
-          : _buildSinglePageWidget(
-              Text('Artists',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-              false,
-              4),
     ];
   }
 
@@ -267,7 +249,6 @@ class _HomePageState extends State<HomePage> {
         },
         children: <Widget>[
           FavouritesPage(),
-          PlaylistsPage(),
           TracksPage(),
           AlbumsPage(),
           ArtistsPage(),

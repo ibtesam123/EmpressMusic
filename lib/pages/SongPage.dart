@@ -101,7 +101,15 @@ class _SongPageState extends State<SongPage> {
               color: Colors.blueGrey,
               icon: Icon(Icons.favorite_border),
               iconSize: 25,
-              onPressed: () {},
+              onPressed: () {
+                if (model.favourites
+                    .contains(model.songsList[model.currentIndex])) {
+                  model.removeFromFavourites(
+                      model.songsList[model.currentIndex]);
+                } else {
+                  model.addToFavourites(model.songsList[model.currentIndex]);
+                }
+              },
             ),
             IconButton(
               color: Colors.blueGrey,

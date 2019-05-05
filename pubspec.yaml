@@ -14,6 +14,7 @@ dependencies:
   flute_music_player:
   shared_preferences:
   scoped_model:
+  sqflite:
 
 dev_dependencies:
   flutter_test:
@@ -27,6 +28,7 @@ flutter:
     - assets/images/AppLogo.png
     - assets/images/Artist.png
     - assets/images/MusicPlaceHolder.png
+    - assets/images/CreatePlaylist.png
 
   # fonts:
   #   - family: Schyler

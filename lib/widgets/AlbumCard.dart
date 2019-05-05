@@ -48,18 +48,25 @@ class AlbumCard extends StatelessWidget {
       itemBuilder: (BuildContext context) {
         return <PopupMenuItem>[
           PopupMenuItem(
-            child: Text('Item 1'),
-            value: 'item 1',
+            child: Text('Add to favorites'),
+            value: 0,
           ),
           PopupMenuItem(
             child: Text('Item 2'),
-            value: 'item2',
+            value: 1,
           )
         ];
       },
       icon: Icon(Icons.more_vert, color: Colors.white),
+      onSelected: (dynamic value) {
+        switch (value) {
+          case 0:
+            break;
+          case 1:
+            break;
+        }
+      },
     );
-    //TODO: Implement this
   }
 
   Widget _buildAlbumInfo() {

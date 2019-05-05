@@ -1,6 +1,7 @@
 import 'package:scoped_model/scoped_model.dart';
 import 'package:flute_music_player/flute_music_player.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite/sqflite.dart';
 
 import '../models/SongModel.dart';
 import '../utils/enums/PlayerStateEnum.dart';
@@ -10,6 +11,7 @@ mixin ConnectedModel on Model {
   List<SongModel> _localSongs;
   Map<int, List<SongModel>> _albumList;
   Map<String, List<SongModel>> _artistList;
+  List<SongModel> _favourites;
   MusicFinder _audioPlayer = MusicFinder();
   PlayerState _playerState = PlayerState.STOPPED;
   bool _isAvailable = false;
@@ -17,6 +19,7 @@ mixin ConnectedModel on Model {
   SharedPreferences _preferences;
   Duration _currentPosition = Duration(milliseconds: 0);
   Duration _duration = Duration(milliseconds: 0);
+  Database _localDB;
 }
 
 mixin SongsModel on ConnectedModel {
@@ -42,6 +45,10 @@ mixin SongsModel on ConnectedModel {
 
   List<SongModel> get localSongs {
     return _localSongs;
+  }
+
+  List<SongModel> get favourites {
+    return _favourites;
   }
 
   void setSongsList(List<SongModel> list, bool refresh) {
@@ -76,33 +83,144 @@ mixin PlayerModel on ConnectedModel {
     }
   }
 
+  void _buildFavourites() {
+    List<String> _fIDs = _preferences.getStringList('Favourites');
+    List<SongModel> _fSongsList = List<SongModel>();
+    if (_fIDs != null) {
+      for (String id in _fIDs) {
+        SongModel song = _localSongs
+            .firstWhere((SongModel model) => model.id == int.parse(id));
+        _fSongsList.add(song);
+      }
+    }
+    _favourites.addAll(_fSongsList);
+  }
+
+  void addToFavourites(SongModel s) async {
+    _favourites.add(s);
+    List<String> _fIDs = List<String>();
+    for (SongModel _song in _favourites) {
+      _fIDs.add(_song.id.toString());
+    }
+    await _preferences.setStringList('Favourites', _fIDs);
+    notifyListeners();
+  }
+
+  void removeFromFavourites(SongModel s) async {
+    _favourites.remove(s);
+    List<String> _fIDs = List<String>();
+    for (SongModel _song in _favourites) {
+      _fIDs.add(_song.id.toString());
+    }
+    await _preferences.setStringList('Favourites', _fIDs);
+    notifyListeners();
+  }
+
   Future<void> _initialize() async {
     _songsList = List<SongModel>();
     _localSongs = List<SongModel>();
+    _favourites = List<SongModel>();
     _albumList = Map();
     _artistList = Map();
     _preferences = await SharedPreferences.getInstance();
+    _localDB = await _getDatabase();
   }
 
-  Future<void> initMusicPlayer() async {
-    var _songData = await MusicFinder.allSongs();
-    await _initialize();
-    for (Song s in _songData) {
-      SongModel _model = SongModel(
-          album: s.album,
-          albumArt: s.albumArt,
-          artist: s.artist,
-          duration: s.duration,
-          id: s.id,
-          title: s.title,
-          uri: s.uri,
-          albumID: s.albumId);
-      _localSongs.add(_model);
-      _addToAlbum(_model);
-      _addToArtist(_model);
+  Map<String, dynamic> _songToMap(SongModel song) {
+    return {
+      'id': song.id,
+      'artist': song.artist,
+      'title': song.title,
+      'album': song.album,
+      'albumID': song.albumID,
+      'duration': song.duration,
+      'uri': song.uri,
+      'albumArt': song.albumArt
+    };
+  }
+
+  SongModel _mapToSong(Map<String, dynamic> map) {
+    return SongModel(
+      id: map['id'],
+      artist: map['artist'],
+      title: map['title'],
+      album: map['album'],
+      albumID: map['albumID'],
+      duration: map['duration'],
+      uri: map['uri'],
+      albumArt: map['albumArt'],
+    );
+  }
+
+  Future<Database> _getDatabase() async {
+    String databasesPath = await getDatabasesPath();
+    String dbPath = databasesPath + '/EmpressMusic.db';
+
+    var database =
+        await openDatabase(dbPath, version: 1, onCreate: _onCreateDB);
+    return database;
+  }
+
+  void _onCreateDB(Database database, int version) async {
+    await database.execute('CREATE TABLE SONGS (' +
+        'id INTEGER,' +
+        'artist TEXT,' +
+        'title TEXT,' +
+        'album TEXT,' +
+        'albumID INTEGER,' +
+        'duration INTEGER,' +
+        'uri TEXT,' +
+        'albumArt TEXT' +
+        ')');
+  }
+
+  Future<void> _addSongToLocalDB(SongModel song) async {
+    await _localDB.insert('SONGS', _songToMap(song));
+  }
+
+  Future<void> _clearLocalDB() async {
+    _localDB.execute('DELETE FROM SONGS');
+  }
+
+  Future<void> _fetchSongs() async {
+    var _results = await _localDB.rawQuery('SELECT * FROM SONGS');
+    var _songData;
+    if (_results.toList().length > 0) {
+      print('Fetching songs from LocalDB');
+      _songData = _results.toList();
+      for (Map<String, dynamic> map in _songData) {
+        _localSongs.add(_mapToSong(map));
+        _addToAlbum(_mapToSong(map));
+        _addToArtist(_mapToSong(map));
+      }
+      _buildFavourites();
+    } else {
+      print('Fetching songs using LIBRARY');
+      _songData = await MusicFinder.allSongs();
+      for (Song s in _songData) {
+        SongModel _model = SongModel(
+            album: s.album,
+            albumArt: s.albumArt,
+            artist: s.artist,
+            duration: s.duration,
+            id: s.id,
+            title: s.title,
+            uri: s.uri,
+            albumID: s.albumId);
+        _localSongs.add(_model);
+        _addToAlbum(_model);
+        _addToArtist(_model);
+        _addSongToLocalDB(_model);
+      }
+      _buildFavourites();
     }
     _localSongs.sort((SongModel model1, SongModel model2) =>
         model1.title.compareTo(model2.title));
+  }
+
+  Future<void> initMusicPlayer() async {
+    await _initialize();
+    await _fetchSongs();
 
     _audioPlayer.setPositionHandler((Duration currentDuration) {
       _currentPosition = currentDuration;
