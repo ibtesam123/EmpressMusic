@@ -97,13 +97,13 @@ class NowPlayingCard extends StatelessWidget {
         ));
   }
 
-  Widget _buildProgressBar() {
-    return Container(
-      width: MediaQuery.of(context).size.width * model.percentageCompletion(),
-      height: 2.0,
-      color: Colors.blue,
-    );
-  }
+  // Widget _buildProgressBar() {
+  //   return Container(
+  //     width: MediaQuery.of(context).size.width * model.percentageCompletion(),
+  //     height: 2.0,
+  //     color: Colors.blue,
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -114,9 +114,6 @@ class NowPlayingCard extends StatelessWidget {
         color: Colors.black.withOpacity(0.1),
         padding: EdgeInsets.only(top: 0.5),
         child: GestureDetector(
-          onDoubleTap: () {
-            model.stopPlayback();
-          },
           onTap: () {
             Navigator.of(context).push(MaterialPageRoute(
                 builder: (BuildContext context) => SongPage()));

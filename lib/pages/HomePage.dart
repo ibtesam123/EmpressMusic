@@ -55,28 +55,28 @@ class _HomePageState extends State<HomePage> {
                       //TODO: Implement Logic here
                     },
                   ),
-                  PopupMenuButton(
-                    itemBuilder: (context) {
-                      return <PopupMenuItem>[
-                        PopupMenuItem(
-                          child: Text('Item 1'),
-                          value: 'item 1',
-                        ),
-                        PopupMenuItem(
-                          child: Text('Item 2'),
-                          value: 'item 2',
-                        ),
-                        PopupMenuItem(
-                          child: Text('Item 3'),
-                          value: 'item 3',
-                        ),
-                      ];
-                    },
-                    onSelected: (dynamic value) {
-                      print(value);
-                      //TODO: Implement Logic
-                    },
-                  )
+                  // PopupMenuButton(
+                  //   itemBuilder: (context) {
+                  //     return <PopupMenuItem>[
+                  //       PopupMenuItem(
+                  //         child: Text('Item 1'),
+                  //         value: 'item 1',
+                  //       ),
+                  //       PopupMenuItem(
+                  //         child: Text('Item 2'),
+                  //         value: 'item 2',
+                  //       ),
+                  //       PopupMenuItem(
+                  //         child: Text('Item 3'),
+                  //         value: 'item 3',
+                  //       ),
+                  //     ];
+                  //   },
+                  //   onSelected: (dynamic value) {
+                  //     print(value);
+                  //     //TODO: Implement Logic
+                  //   },
+                  // )
                 ],
               ),
               AppBar(
@@ -113,46 +113,36 @@ class _HomePageState extends State<HomePage> {
         break;
     }
     return isSelected
-        ? GestureDetector(
-            onTap: () {
-              _pageController.jumpToPage(pageNo);
-            },
-            child: Container(
-              padding: EdgeInsets.only(top: 8.0, right: 10.0, left: 10.0),
-              child: Column(
-                children: <Widget>[
-                  title,
-                  SizedBox(height: 5),
-                  Container(
-                    height: 2,
-                    width: _bottomLineWidth,
-                    decoration: BoxDecoration(
-                        color: Colors.blue,
-                        borderRadius: BorderRadius.all(Radius.circular(8))),
-                  ),
-                ],
+        ? Column(
+            children: <Widget>[
+              FlatButton(
+                child: title,
+                onPressed: () => _pageController.jumpToPage(pageNo),
+                splashColor: Colors.transparent,
               ),
-            ),
+              Container(
+                height: 2,
+                width: _bottomLineWidth,
+                decoration: BoxDecoration(
+                    color: Colors.blue,
+                    borderRadius: BorderRadius.all(Radius.circular(8))),
+              ),
+            ],
           )
-        : GestureDetector(
-            onTap: () {
-              _pageController.jumpToPage(pageNo);
-            },
-            child: Container(
-              padding: EdgeInsets.only(top: 8.0, right: 10.0, left: 10.0),
-              child: Column(
-                children: <Widget>[
-                  title,
-                  SizedBox(height: 5),
-                  Container(
-                    height: 2,
-                    width: _bottomLineWidth,
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(8))),
-                  ),
-                ],
+        : Column(
+            children: <Widget>[
+              FlatButton(
+                child: title,
+                onPressed: () => _pageController.jumpToPage(pageNo),
+                splashColor: Colors.transparent,
               ),
-            ),
+              Container(
+                height: 2,
+                width: _bottomLineWidth,
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(8))),
+              ),
+            ],
           );
   }
 
@@ -226,7 +216,6 @@ class _HomePageState extends State<HomePage> {
         elevation: 1,
         child: Column(
           children: <Widget>[
-            SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               mainAxisSize: MainAxisSize.max,
@@ -272,8 +261,7 @@ class _HomePageState extends State<HomePage> {
       mainAxisAlignment: MainAxisAlignment.end,
       children: <Widget>[
         model.playerState == PlayerState.PLAYING ||
-                model.playerState == PlayerState.PAUSED ||
-                model.playerState == PlayerState.MUTED
+                model.playerState == PlayerState.PAUSED
             ? NowPlayingCard(
                 context: context,
                 index: model.currentIndex,
@@ -290,8 +278,28 @@ class _HomePageState extends State<HomePage> {
       builder: (BuildContext context, Widget child, MainModel model) {
         return WillPopScope(
           onWillPop: () {
-            model.stopPlayback();
-            exit(0);
+            showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) {
+                  return AlertDialog(
+                    title: Text('Exiting will stop the Playback'),
+                    content: Text('Are you sure you want to exit?'),
+                    actions: <Widget>[
+                      FlatButton(
+                        child: Text('OK'),
+                        onPressed: () {
+                          model.stopPlayback();
+                          exit(0);
+                        },
+                      ),
+                      FlatButton(
+                        child: Text('Cancel'),
+                        onPressed: () => Navigator.of(context).pop(),
+                      )
+                    ],
+                  );
+                });
           },
           child: Scaffold(
             appBar: _buildAppBar(),

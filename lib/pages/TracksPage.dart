@@ -23,6 +23,7 @@ class _TracksPageState extends State<TracksPage> {
               model: model,
               songsList: songList,
               ifPlayAndPop: false,
+              fromPlaylist: false,
             ),
             SizedBox(
               width: MediaQuery.of(context).size.width,

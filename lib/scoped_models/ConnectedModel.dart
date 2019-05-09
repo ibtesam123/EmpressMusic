@@ -2,6 +2,7 @@ import 'package:scoped_model/scoped_model.dart';
 import 'package:flute_music_player/flute_music_player.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
+import 'dart:math';
 
 import '../models/SongModel.dart';
 import '../utils/enums/PlayerStateEnum.dart';
@@ -16,6 +17,8 @@ mixin ConnectedModel on Model {
   PlayerState _playerState = PlayerState.STOPPED;
   bool _isAvailable = false;
   int _currentIndex = -1;
+  bool _isMuted = false;
+  bool _isShuffleOn = false;
   SharedPreferences _preferences;
   Duration _currentPosition = Duration(milliseconds: 0);
   Duration _duration = Duration(milliseconds: 0);
@@ -55,6 +58,11 @@ mixin SongsModel on ConnectedModel {
     if (refresh) _songsList.clear();
     _songsList.addAll(list);
   }
+
+  void toggleShuffle() {
+    _isShuffleOn = !_isShuffleOn;
+    notifyListeners();
+  }
 }
 
 mixin PlayerModel on ConnectedModel {
@@ -90,14 +98,27 @@ mixin PlayerModel on ConnectedModel {
       for (String id in _fIDs) {
         SongModel song = _localSongs
             .firstWhere((SongModel model) => model.id == int.parse(id));
+        song.setFavourite(true);
         _fSongsList.add(song);
       }
     }
     _favourites.addAll(_fSongsList);
   }
 
+  void addListToFavourites(List<SongModel> list) async {
+    _favourites.addAll(list);
+    for (SongModel s in list) s.setFavourite(true);
+    List<String> _fIDs = List<String>();
+    for (SongModel _song in _favourites) {
+      _fIDs.add(_song.id.toString());
+    }
+    await _preferences.setStringList('Favourites', _fIDs);
+    notifyListeners();
+  }
+
   void addToFavourites(SongModel s) async {
     _favourites.add(s);
+    s.setFavourite(true);
     List<String> _fIDs = List<String>();
     for (SongModel _song in _favourites) {
       _fIDs.add(_song.id.toString());
@@ -108,6 +129,7 @@ mixin PlayerModel on ConnectedModel {
 
   void removeFromFavourites(SongModel s) async {
     _favourites.remove(s);
+    s.setFavourite(false);
     List<String> _fIDs = List<String>();
     for (SongModel _song in _favourites) {
       _fIDs.add(_song.id.toString());
@@ -135,21 +157,22 @@ mixin PlayerModel on ConnectedModel {
       'albumID': song.albumID,
       'duration': song.duration,
       'uri': song.uri,
-      'albumArt': song.albumArt
+      'albumArt': song.albumArt,
+      'isFavourite': song.isFavourite ? 1 : 0
     };
   }
 
   SongModel _mapToSong(Map<String, dynamic> map) {
     return SongModel(
-      id: map['id'],
-      artist: map['artist'],
-      title: map['title'],
-      album: map['album'],
-      albumID: map['albumID'],
-      duration: map['duration'],
-      uri: map['uri'],
-      albumArt: map['albumArt'],
-    );
+        id: map['id'],
+        artist: map['artist'],
+        title: map['title'],
+        album: map['album'],
+        albumID: map['albumID'],
+        duration: map['duration'],
+        uri: map['uri'],
+        albumArt: map['albumArt'],
+        isFavourite: map['isFavourite'] == 1 ? true : false);
   }
 
   Future<Database> _getDatabase() async {
@@ -170,7 +193,8 @@ mixin PlayerModel on ConnectedModel {
         'albumID INTEGER,' +
         'duration INTEGER,' +
         'uri TEXT,' +
-        'albumArt TEXT' +
+        'albumArt TEXT,' +
+        'isFavourite INTEGER' +
         ')');
   }
 
@@ -206,7 +230,8 @@ mixin PlayerModel on ConnectedModel {
             id: s.id,
             title: s.title,
             uri: s.uri,
-            albumID: s.albumId);
+            albumID: s.albumId,
+            isFavourite: false);
         _localSongs.add(_model);
         _addToAlbum(_model);
         _addToArtist(_model);
@@ -251,8 +276,7 @@ mixin PlayerModel on ConnectedModel {
   Future<void> startPlayback(int index) async {
     _currentIndex = index;
     await _audioPlayer.stop();
-    if (_playerState != PlayerState.PAUSED &&
-        _playerState != PlayerState.MUTED) {
+    if (_playerState != PlayerState.PAUSED) {
       await _audioPlayer.play(_songsList[index].uri);
       _playerState = PlayerState.PLAYING;
     }
@@ -270,8 +294,7 @@ mixin PlayerModel on ConnectedModel {
   }
 
   Future<void> pausePlayback() async {
-    if (_playerState == PlayerState.PLAYING ||
-        _playerState == PlayerState.MUTED) {
+    if (_playerState == PlayerState.PLAYING) {
       await _audioPlayer.pause();
       _playerState = PlayerState.PAUSED;
       notifyListeners();
@@ -292,13 +315,19 @@ mixin PlayerModel on ConnectedModel {
     notifyListeners();
   }
 
-  Future<void> mutePlayback() async {
-    await _audioPlayer.mute(true);
-    _playerState = PlayerState.MUTED;
+  Future<void> toggleMutePlayback() async {
+    _isMuted = !_isMuted;
+    await _audioPlayer.mute(_isMuted);
+    notifyListeners();
   }
 
   int nextSong() {
-    _currentIndex++;
+    if (_isShuffleOn) {
+      Random r = Random();
+      _currentIndex = r.nextInt(_songsList.length);
+    } else {
+      _currentIndex++;
+    }
     if (_currentIndex >= _songsList.length) {
       _currentIndex = 0;
     }
@@ -330,6 +359,14 @@ mixin UtilityModel on ConnectedModel {
 
   Duration get currentPosition {
     return _currentPosition;
+  }
+
+  bool get isMuted {
+    return _isMuted;
+  }
+
+  bool get isShuffleOn {
+    return _isShuffleOn;
   }
 
   double percentageCompletion() {

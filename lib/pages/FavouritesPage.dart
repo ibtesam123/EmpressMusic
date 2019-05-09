@@ -22,6 +22,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
               index: index,
               model: model,
               songsList: model.favourites,
+              fromPlaylist: false,
             );
           },
         );

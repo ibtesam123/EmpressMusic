@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scoped_model/scoped_model.dart';
 
 import '../scoped_models/MainModel.dart';
 
@@ -36,22 +37,38 @@ class ArtistCard extends StatelessWidget {
   }
 
   Widget _buildPopupButton() {
-    return PopupMenuButton(
-      itemBuilder: (BuildContext context) {
-        return <PopupMenuItem>[
-          PopupMenuItem(
-            child: Text('Item 1'),
-            value: 'item 1',
+    return ScopedModelDescendant<MainModel>(
+      builder: (BuildContext context, Widget child, MainModel model) {
+        return PopupMenuButton(
+          itemBuilder: (BuildContext context) {
+            return <PopupMenuItem>[
+              PopupMenuItem(
+                child: Text('Add to favorites'),
+                value: 0,
+              ),
+              PopupMenuItem(
+                child: Text('Add to Now Playing'),
+                value: 1,
+              )
+            ];
+          },
+          icon: Icon(
+            Icons.more_vert,
+            color: Colors.black.withOpacity(0.7),
           ),
-          PopupMenuItem(
-            child: Text('Item 2'),
-            value: 'item2',
-          )
-        ];
+          onSelected: (dynamic value) {
+            switch (value) {
+              case 0:
+                model.addListToFavourites(model.artistList[artistName]);
+                break;
+              case 1:
+                model.setSongsList(model.artistList[artistName], false);
+                break;
+            }
+          },
+        );
       },
-      icon: Icon(Icons.more_vert, color: Colors.black),
     );
-    //TODO: Implement this
   }
 
   @override

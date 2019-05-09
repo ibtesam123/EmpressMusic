@@ -27,6 +27,7 @@ class _ArtistSongListPageState extends State<ArtistSongListPage> {
               index: index,
               model: model,
               ifPlayAndPop: true,
+              fromPlaylist: false,
             ),
             Container(
               width: MediaQuery.of(context).size.width,

@@ -9,6 +9,7 @@ class SongModel {
   int duration;
   String uri;
   String albumArt;
+  bool isFavourite;
 
   SongModel(
       {@required this.id,
@@ -18,5 +19,10 @@ class SongModel {
       @required this.duration,
       @required this.title,
       @required this.uri,
-      @required this.albumID});
+      @required this.albumID,
+      @required this.isFavourite});
+
+  void setFavourite(bool status) {
+    this.isFavourite = status;
+  }
 }

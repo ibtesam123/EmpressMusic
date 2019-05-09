@@ -5,6 +5,7 @@ import 'package:scoped_model/scoped_model.dart';
 import '../scoped_models/MainModel.dart';
 import '../utils/enums/PlayerStateEnum.dart';
 import '../utils/themes/HomeTheme.dart';
+import '../pages/PlaylistSongListPage.dart';
 
 class SongPage extends StatefulWidget {
   @override
@@ -95,11 +96,21 @@ class _SongPageState extends State<SongPage> {
               color: Colors.blueGrey,
               icon: Icon(Icons.library_music),
               iconSize: 25,
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (BuildContext context) =>
+                            PlaylistSongListPage()));
+              },
             ),
             IconButton(
-              color: Colors.blueGrey,
-              icon: Icon(Icons.favorite_border),
+              color: model.songsList[model.currentIndex].isFavourite
+                  ? Colors.red
+                  : Colors.blueGrey,
+              icon: Icon(model.songsList[model.currentIndex].isFavourite
+                  ? Icons.favorite
+                  : Icons.favorite_border),
               iconSize: 25,
               onPressed: () {
                 if (model.favourites
@@ -113,11 +124,11 @@ class _SongPageState extends State<SongPage> {
             ),
             IconButton(
               color: Colors.blueGrey,
-              icon: Icon(model.playerState == PlayerState.MUTED
-                  ? Icons.volume_off
-                  : Icons.volume_up),
+              icon: Icon(model.isMuted ? Icons.volume_off : Icons.volume_up),
               iconSize: 25,
-              onPressed: () {},
+              onPressed: () {
+                model.toggleMutePlayback();
+              },
             ),
           ],
         );
@@ -197,8 +208,10 @@ class _SongPageState extends State<SongPage> {
             children: <Widget>[
               IconButton(
                 icon: Icon(Icons.shuffle),
-                color: Colors.blueGrey,
-                onPressed: () {},
+                color: model.isShuffleOn ? Colors.blue : Colors.blueGrey,
+                onPressed: () {
+                  model.toggleShuffle();
+                },
               ),
               IconButton(
                 icon: Icon(Icons.skip_previous),

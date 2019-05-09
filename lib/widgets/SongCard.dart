@@ -12,13 +12,15 @@ class SongCard extends StatelessWidget {
   final List<SongModel> songsList;
   final MainModel model;
   final bool ifPlayAndPop;
+  final bool fromPlaylist;
 
   SongCard(
       {@required this.context,
       @required this.index,
       @required this.songsList,
       @required this.model,
-      @required this.ifPlayAndPop});
+      @required this.ifPlayAndPop,
+      @required this.fromPlaylist});
 
   Widget _buildSongAvatar(String albumArtUri) {
     return ClipRRect(
@@ -80,12 +82,18 @@ class SongCard extends StatelessWidget {
       width: MediaQuery.of(context).size.width,
       child: FlatButton(
         onPressed: () async {
-          if (ifPlayAndPop) Navigator.of(context).pop();
-          model.setSongsList(songsList, true);
-          model.setPlayerState(PlayerState.PLAYING);
-          model.startPlayback(index);
-          Navigator.of(context).push(
-              MaterialPageRoute(builder: (BuildContext context) => SongPage()));
+          if (fromPlaylist) {
+            if (ifPlayAndPop) Navigator.of(context).pop();
+            model.setPlayerState(PlayerState.PLAYING);
+            model.startPlayback(index);
+          } else {
+            if (ifPlayAndPop) Navigator.of(context).pop();
+            model.setSongsList(songsList, true);
+            model.setPlayerState(PlayerState.PLAYING);
+            model.startPlayback(index);
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (BuildContext context) => SongPage()));
+          }
         },
         padding: EdgeInsets.symmetric(vertical: 25.0),
         child: Row(
