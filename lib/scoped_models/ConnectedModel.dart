@@ -311,7 +311,6 @@ mixin PlayerModel on ConnectedModel {
   Future<void> seekPlayback(Duration seekPosition) async {
     _currentPosition = seekPosition;
     await _audioPlayer.seek(seekPosition.inSeconds.toDouble());
-    _playerState = PlayerState.PLAYING;
     notifyListeners();
   }
 
