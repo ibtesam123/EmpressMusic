@@ -24,7 +24,7 @@ mixin ConnectedModel on Model {
   Duration _duration = Duration(milliseconds: 0);
   Database _localDB;
 }
-
+ 
 mixin SongsModel on ConnectedModel {
   List<SongModel> get songsList {
     return _songsList;
